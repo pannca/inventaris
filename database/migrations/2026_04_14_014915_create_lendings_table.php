@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('lendings', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('item_id')->constrained();
+            $table->string('name');
+            $table->integer('total');
+            $table->text('ket')->nullable();
+            $table->date('date');
+            $table->date('return_date')->nullable();
+            $table->string('edited_by')->nullable();
             $table->timestamps();
         });
     }

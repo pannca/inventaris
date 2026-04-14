@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('categories', function (Blueprint $table) {
-            $table->id(); // ID unik untuk setiap kategori.
-            $table->string('name'); // Menyimpan nama kategori (contoh: Alat Dapur, Elektronik).
-            $table->string('division_pj'); // Menyimpan nama Divisi Penanggung Jawab (contoh: Sarpras, Tefa).
-            $table->timestamps(); // Melacak waktu data kategori ditambahkan atau diperbarui.
+            $table->id(); 
+            $table->string('name');
+            $table->string('division_pj'); // Menyimpan nama Divisi Penanggung Jawab (contoh: Sarpras, Tefa)
+            $table->timestamps(); // Melacak waktu data kategori ditambahkan atau diperbarui
         });
     }
 

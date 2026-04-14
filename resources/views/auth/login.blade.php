@@ -34,7 +34,24 @@
                         <p class="text-muted small mb-0">Sistem Inventaris Sekolah</p>
                     </div>
 
-                    
+                    @if ($errors->any())
+                        <div class="alert alert-danger py-2 small">{{ $errors->first() }}</div>
+                    @endif
+
+                    <form method="POST" action="/login">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input type="email" name="email" class="form-control"
+                                value="{{ old('email') }}" placeholder="contoh@email.com" required autofocus>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Password</label>
+                            <input type="password" name="password" class="form-control"
+                                placeholder="Masukkan password" required>
+                        </div>
+                        <button type="submit" class="btn btn-login text-white w-100 fw-semibold">Login</button>
+                    </form>
                 </div>
             </div>
         </div>

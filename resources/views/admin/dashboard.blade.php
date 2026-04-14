@@ -5,7 +5,7 @@
 
     <div class="mb-4">
         <h4 class="fw-bold mb-1">Dashboard</h4>
-        <p class="text-muted small mb-0">Selamat datang, Admin Utama!</p>
+        <p class="text-muted small mb-0">Selamat datang, {{ Auth::user()->name }}!</p>
     </div>
 
     <div class="row g-3">
@@ -17,7 +17,7 @@
                     </div>
                     <div>
                         <p class="text-muted small mb-0">Total Barang</p>
-                        <h5 class="fw-bold mb-0">120</h5>
+                        <h5 class="fw-bold mb-0">{{ \App\Models\Item::sum('total') }}</h5>
                     </div>
                 </div>
             </div>
@@ -30,7 +30,7 @@
                     </div>
                     <div>
                         <p class="text-muted small mb-0">Kategori</p>
-                        <h5 class="fw-bold mb-0">12</h5>
+                        <h5 class="fw-bold mb-0">{{ \App\Models\Category::count() }}</h5>
                     </div>
                 </div>
             </div>
@@ -43,7 +43,7 @@
                     </div>
                     <div>
                         <p class="text-muted small mb-0">Dipinjam</p>
-                        <h5 class="fw-bold mb-0">15</h5>
+                        <h5 class="fw-bold mb-0">{{ \App\Models\Lending::whereNull('return_date')->sum('total') }}</h5>
                     </div>
                 </div>
             </div>
@@ -56,7 +56,7 @@
                     </div>
                     <div>
                         <p class="text-muted small mb-0">Diperbaiki</p>
-                        <h5 class="fw-bold mb-0">5</h5>
+                        <h5 class="fw-bold mb-0">{{ \App\Models\Item::sum('repair') }}</h5>
                     </div>
                 </div>
             </div>

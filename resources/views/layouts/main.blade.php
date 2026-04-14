@@ -72,6 +72,15 @@
             width: 30px;
         }
 
+        .sidebar .nav-link.dropdown-toggle::after {
+            margin-left: auto;
+        }
+
+        .sidebar .collapse-link {
+            padding-left: 48px;
+            font-size: 0.95rem;
+        }
+
         .offcanvas-sidebar .nav-link {
             color: rgba(255, 255, 255, 0.8);
             margin-bottom: 10px;
@@ -88,6 +97,11 @@
 
         .offcanvas-sidebar .nav-link i {
             width: 30px;
+        }
+
+        .offcanvas-sidebar .collapse-link {
+            padding-left: 48px;
+            font-size: 0.95rem;
         }
 
         .main-wrapper {
@@ -125,23 +139,62 @@
         <div class="offcanvas-body px-2 pt-0">
             <div class="nav flex-column">
                 <small class="text-white-50 mb-2">Menu</small>
-                <a href="/admin/dashboard" class="nav-link">
+                <a href="{{ Auth::user()->role == 'admin' ? route('admin.dashboard') : route('staff.dashboard') }}"
+                    class="nav-link {{ request()->is('*/dashboard') ? 'active' : '' }}">
                     <i class="fas fa-th-large"></i> Dashboard
                 </a>
                 <small class="text-white-50 mt-3 mb-2">Items Data</small>
-                <a href="/admin/categories" class="nav-link">
-                    <i class="fas fa-list"></i> Categories
-                </a>
-                <a href="/admin/items" class="nav-link">
-                    <i class="fas fa-box"></i> Items
-                </a>
-                <a href="/staff/lendings" class="nav-link">
-                    <i class="fas fa-hand-holding"></i> Lending
-                </a>
+                @if (Auth::user()->role == 'admin')
+                    <a href="{{ route('admin.categories.index') }}"
+                        class="nav-link {{ request()->is('*/categories*') ? 'active' : '' }}">
+                        <i class="fas fa-list"></i> Categories
+                    </a>
+                    <a href="{{ route('admin.items.index') }}"
+                        class="nav-link {{ request()->is('*/items*') ? 'active' : '' }}">
+                        <i class="fas fa-box"></i> Items
+                    </a>
+                @elseif (Auth::user()->role == 'staff')
+                    <a href="{{ route('staff.items.index') }}"
+                        class="nav-link {{ request()->is('*/items*') ? 'active' : '' }}">
+                        <i class="fas fa-box"></i> Items
+                    </a>
+                    <a href="{{ route('staff.lendings.index') }}"
+                        class="nav-link {{ request()->is('*/lendings*') ? 'active' : '' }}">
+                        <i class="fas fa-hand-holding"></i> Lending
+                    </a>
+                @endif
                 <small class="text-white-50 mt-3 mb-2">Accounts</small>
-                <a href="/admin/users" class="nav-link">
-                    <i class="fas fa-users"></i> Users
-                </a>
+                @if (Auth::user()->role == 'admin')
+                    <div class="nav-item">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="collapse"
+                            data-bs-target="#usersCollapseMobile" aria-expanded="false">
+                            <i class="fas fa-users"></i> Users
+                        </a>
+                        <div class="collapse" id="usersCollapseMobile">
+                            <a href="{{ route('admin.users.index', ['role' => 'admin']) }}"
+                                class="nav-link collapse-link {{ request()->is('*/users*') && request('role') == 'admin' ? 'active' : '' }}">
+                                <i class="fas fa-user-tie"></i> Admin
+                            </a>
+                            <a href="{{ route('admin.users.index', ['role' => 'staff']) }}"
+                                class="nav-link collapse-link {{ request()->is('*/users*') && request('role') == 'staff' ? 'active' : '' }}">
+                                <i class="fas fa-user"></i> Operator
+                            </a>
+                        </div>
+                    </div>
+                @elseif (Auth::user()->role == 'staff')
+                    <div class="nav-item">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="collapse"
+                            data-bs-target="#usersCollapseMobileStaff" aria-expanded="false">
+                            <i class="fas fa-users"></i> Users
+                        </a>
+                        <div class="collapse" id="usersCollapseMobileStaff">
+                            <a href="{{ route('staff.users.index') }}"
+                                class="nav-link collapse-link {{ request()->is('*/users*') ? 'active' : '' }}">
+                                <i class="fas fa-user"></i> Edit
+                            </a>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -154,23 +207,62 @@
             </div>
             <div class="nav flex-column">
                 <small class="text-white-50 mb-2">Menu</small>
-                <a href="/admin/dashboard" class="nav-link">
+                <a href="{{ Auth::user()->role == 'admin' ? route('admin.dashboard') : route('staff.dashboard') }}"
+                    class="nav-link {{ request()->is('*/dashboard') ? 'active' : '' }}">
                     <i class="fas fa-th-large"></i> Dashboard
                 </a>
                 <small class="text-white-50 mt-3 mb-2">Items Data</small>
-                <a href="/admin/categories" class="nav-link">
-                    <i class="fas fa-list"></i> Categories
-                </a>
-                <a href="/admin/items" class="nav-link">
-                    <i class="fas fa-box"></i> Items
-                </a>
-                <a href="/staff/lendings" class="nav-link">
-                    <i class="fas fa-hand-holding"></i> Lending
-                </a>
+                @if (Auth::user()->role == 'admin')
+                    <a href="{{ route('admin.categories.index') }}"
+                        class="nav-link {{ request()->is('*/categories*') ? 'active' : '' }}">
+                        <i class="fas fa-list"></i> Categories
+                    </a>
+                    <a href="{{ route('admin.items.index') }}"
+                        class="nav-link {{ request()->is('*/items*') ? 'active' : '' }}">
+                        <i class="fas fa-box"></i> Items
+                    </a>
+                @elseif (Auth::user()->role == 'staff')
+                    <a href="{{ route('staff.items.index') }}"
+                        class="nav-link {{ request()->is('*/items*') ? 'active' : '' }}">
+                        <i class="fas fa-box"></i> Items
+                    </a>
+                    <a href="{{ route('staff.lendings.index') }}"
+                        class="nav-link {{ request()->is('*/lendings*') ? 'active' : '' }}">
+                        <i class="fas fa-hand-holding"></i> Lending
+                    </a>
+                @endif
                 <small class="text-white-50 mt-3 mb-2">Accounts</small>
-                <a href="/admin/users" class="nav-link">
-                    <i class="fas fa-users"></i> Users
-                </a>
+                @if (Auth::user()->role == 'admin')
+                    <div class="nav-item">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="collapse"
+                            data-bs-target="#usersCollapse" aria-expanded="false">
+                            <i class="fas fa-users"></i> Users
+                        </a>
+                        <div class="collapse" id="usersCollapse">
+                            <a href="{{ route('admin.users.index', ['role' => 'admin']) }}"
+                                class="nav-link collapse-link {{ request()->is('*/users*') && request('role') == 'admin' ? 'active' : '' }}">
+                                <i class="fas fa-user-tie"></i> Admin
+                            </a>
+                            <a href="{{ route('admin.users.index', ['role' => 'staff']) }}"
+                                class="nav-link collapse-link {{ request()->is('*/users*') && request('role') == 'staff' ? 'active' : '' }}">
+                                <i class="fas fa-user"></i> Operator
+                            </a>
+                        </div>
+                    </div>
+                @elseif (Auth::user()->role == 'staff')
+                    <div class="nav-item">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="collapse"
+                            data-bs-target="#usersCollapseStaff" aria-expanded="false">
+                            <i class="fas fa-users"></i> Users
+                        </a>
+                        <div class="collapse" id="usersCollapseStaff">
+                            <a href="{{ route('staff.users.index') }}"
+                                class="nav-link collapse-link {{ request()->is('*/users*') ? 'active' : '' }}">
+                                <i class="fas fa-user"></i> Edit
+                            </a>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -181,17 +273,18 @@
                     <button class="btn d-lg-none p-0" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
                         <i class="fas fa-bars fs-5"></i>
                     </button>
-                    <h6 class="mb-0 fw-bold">Welcome Back, Admin Utama</h6>
+                    <h6 class="mb-0 fw-bold">Welcome Back, {{ Auth::user()->name }}</h6>
                 </div>
                 <div class="d-flex align-items-center">
                     <div class="dropdown">
                         <button class="btn btn-light dropdown-toggle border-0 bg-transparent" data-bs-toggle="dropdown">
-                            Admin Utama
+                            {{ Auth::user()->name }}
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0">
                             <li>
-                                <form action="#" method="POST">
-                                    <button type="button" class="dropdown-item text-danger">Logout</button>
+                                <form action="{{ route('logout') }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item text-danger">Logout</button>
                                 </form>
                             </li>
                         </ul>

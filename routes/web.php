@@ -36,6 +36,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/items', [ItemController::class, 'store'])->name('items.store');
     Route::put('/items/{id}', [ItemController::class, 'update'])->name('items.update');
     Route::delete('/items/{id}', [ItemController::class, 'destroy'])->name('items.destroy');
+    Route::get('/admin/items/{item}/lendings', [LendingController::class, 'byItem'])->name('items.lending');
 
     // Rute CRUD Users
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -57,8 +58,8 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     // --- TAMBAHAN UNTUK ITEMS STAFF ---
     Route::get('/items', [ItemController::class, 'staffIndex'])->name('items.index');
 
-    Route::get('/users', [UserController::class, 'editProfile'])->name('users.index');
-    Route::put('/users/update', [UserController::class, 'updateProfile'])->name('users.update');
+    Route::get('/users', [UserController::class, 'staffIndex'])->name('users.index');
+    Route::put('/users/{id}', [UserController::class, 'staffUpdate'])->name('users.update');
 
     // Rute CRUD Lending
     Route::get('/lendings', [LendingController::class, 'index'])->name('lendings.index');

@@ -18,24 +18,14 @@
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="btn-close" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
 
         <div class="d-flex justify-content-between align-items-start align-items-md-center mb-4 gap-2">
             <div>
                 <h4 class="fw-bold mb-1">Accounts Table</h4>
-                <p class="text-muted small mb-0">Add, delete, update accounts</p>
-            </div>
-            <div class="d-flex gap-2 flex-shrink-0">
-                <a href="{{ route('admin.users.export') }}" class="btn btn-theme px-3">
-                    <i class="fas fa-file-excel d-md-none"></i>
-                    <span class="d-none d-md-inline">Export Excel</span>
-                </a>
-                <button type="button" class="btn btn-theme px-3" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                    <i class="fas fa-plus"></i>
-                    <span class="d-none d-md-inline"> Add</span>
-                </button>
+                <p class="text-muted small mb-0">View and update accounts</p>
             </div>
         </div>
 
@@ -66,12 +56,6 @@
                                                 data-bs-target="#editUserModal{{ $user->id }}">
                                                 Edit
                                             </button>
-                                            <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST"
-                                                onsubmit="return confirm('Yakin ingin menghapus akun ini?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm px-3">Delete</button>
-                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -85,7 +69,7 @@
                                             </div>
                                             <div class="modal-body">
                                                 <p class="text-muted small">Please fill all input form with right value.</p>
-                                                <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
+                                                <form action="{{ route('staff.users.update', $user->id) }}" method="POST">
                                                     @csrf
                                                     @method('PUT')
                                                     <div class="mb-3">
@@ -117,48 +101,6 @@
                             @endforelse
                         </tbody>
                     </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">Add Account Forms</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-muted small">Please fill all input form with right value.</p>
-                    <form action="{{ route('admin.users.store') }}" method="POST">
-                        @csrf
-                        <div class="mb-3">
-                            <label class="form-label">Name</label>
-                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
-                                value="{{ old('name') }}" required>
-                            @error('name') <span class="text-danger small">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                                value="{{ old('email') }}" required>
-                            @error('email') <span class="text-danger small">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label">Role</label>
-                            <select name="role" class="form-select @error('role') is-invalid @enderror" required>
-                                <option value="" disabled selected hidden>Select Role</option>
-                                <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                                <option value="staff" {{ old('role') == 'staff' ? 'selected' : '' }}>Staff</option>
-                            </select>
-                            @error('role') <span class="text-danger small">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-secondary w-50" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-theme w-50">Submit</button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
