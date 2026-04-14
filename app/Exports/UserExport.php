@@ -8,24 +8,29 @@ use Rap2hpoutre\FastExcel\FastExcel;
 
 class UserExport
 {
-    public function download()
+    public function download($filterType = null, $filterValue = null)
     {
-        // Ambil semua data user, lalu manipulasi datanya pakai map()
-        $users = User::all()->map(function ($user) {
+        $query = User::query();
 
-            // Reconstruct password default sesuai aturan 4 huruf awal email + ID
+        if ($filterType && $filterValue) {
+            if ($filterType === 'date') {
+                $query->whereDate('created_at', $filterValue);
+            } elseif ($filterType === 'month') {
+                [$year, $month] = explode('-', $filterValue);
+                $query->whereYear('created_at', $year)->whereMonth('created_at', $month);
+            } elseif ($filterType === 'year') {
+                $query->whereYear('created_at', $filterValue);
+            }
+        }
+
+        $users = $query->get()->map(function ($user) {
             $emailPrefix = substr($user->email, 0, 4);
             $defaultPassword = $emailPrefix . $user->id;
 
-            // Cek apakah password di database masih sama dengan password default
-            if (Hash::check($defaultPassword, $user->password)) {
-                $passwordText = $defaultPassword;
-            } else {
-                // Sesuai PDF, jika sudah diganti tampilkan pesan ini
-                $passwordText = 'This account already edited the password';
-            }
+            $passwordText = Hash::check($defaultPassword, $user->password)
+                ? $defaultPassword
+                : 'This account already edited the password';
 
-            // Return susunan kolom sesuai yang ada di PDF Excel
             return [
                 'Name'     => $user->name,
                 'Email'    => $user->email,
@@ -33,7 +38,6 @@ class UserExport
             ];
         });
 
-        // Download file Excel-nya
         return (new FastExcel($users))->download('users.xlsx');
     }
 }

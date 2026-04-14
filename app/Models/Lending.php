@@ -13,7 +13,11 @@ class Lending extends Model
         'ket',
         'date',
         'return_date',
-        'edited_by'
+        'edited_by',
+        'signature',
+        'returned_total',
+        'return_ket',
+        'return_signature',
     ];
 
     // Relasi balik ke Item (Transaksi ini minjam barang apa?)

@@ -34,6 +34,8 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:users,email',
             'role' => 'required|in:admin,staff',
+        ], [
+            'email.unique' => 'Email sudah digunakan, tidak boleh duplikat.',
         ]);
 
         // Ambil 4 karakter pertama dari email inputan
@@ -66,7 +68,8 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users,email,' . $id,
-            // new_password opsional, tidak wajib diisi
+        ], [
+            'email.unique' => 'Email sudah digunakan, tidak boleh duplikat.',
         ]);
 
         $user = User::findOrFail($id);
@@ -76,7 +79,6 @@ class UserController extends Controller
             'email' => $request->email,
         ];
 
-        // Kalau form 'new password' diisi, maka update passwordnya
         if ($request->filled('new_password')) {
             $dataToUpdate['password'] = Hash::make($request->new_password);
         }
@@ -103,11 +105,9 @@ class UserController extends Controller
     }
 
     // Export Excel Users
-    public function exportExcel()
+    public function exportExcel(Request $request)
     {
-        // Panggil logic export dari folder App\Exports
-        $export = new UserExport();
-        return $export->download();
+        return (new UserExport())->download($request->filter_type, $request->filter_value);
     }
 
     // Method Khusus Staff: Nampilin form edit profile diri sendiri
@@ -125,7 +125,8 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            // new_password opsional
+        ], [
+            'email.unique' => 'Email sudah digunakan, tidak boleh duplikat.',
         ]);
 
         $dataToUpdate = [
@@ -157,7 +158,8 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users,email,' . $id,
-            // new_password opsional, tidak wajib diisi
+        ], [
+            'email.unique' => 'Email sudah digunakan, tidak boleh duplikat.',
         ]);
 
         $user = User::findOrFail($id);

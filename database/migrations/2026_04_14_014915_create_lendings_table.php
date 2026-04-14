@@ -20,6 +20,10 @@ return new class extends Migration
             $table->date('date');
             $table->date('return_date')->nullable();
             $table->string('edited_by')->nullable();
+            $table->string('signature')->nullable();
+            $table->integer('returned_total')->default(0);
+            $table->text('return_ket')->nullable();
+            $table->string('return_signature')->nullable();
             $table->timestamps();
         });
     }

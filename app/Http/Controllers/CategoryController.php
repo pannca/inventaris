@@ -15,10 +15,11 @@ class CategoryController extends Controller
 
     public function store(Request $request) {
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|unique:categories,name',
             'division_pj' => 'required',
         ], [
             'name.required' => 'Kolom nama wajib di isi.',
+            'name.unique' => 'Nama kategori sudah ada.',
             'division_pj.required' => 'Kolom divisi pj wajib diisi.',
         ]);
 
@@ -33,10 +34,11 @@ class CategoryController extends Controller
     public function update(Request $request, $id) {
 
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|unique:categories,name,' . $id,
             'division_pj' => 'required',
         ], [
             'name.required' => 'Kolom nama wajib di isi.',
+            'name.unique' => 'Nama kategori sudah ada.',
             'division_pj.required' => 'Kolom divisi pj wajib diisi.',
         ]);
 

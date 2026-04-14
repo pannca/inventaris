@@ -26,97 +26,119 @@ class LendingController extends Controller
     // Proses nyatet peminjaman baru (Support Multi-Item / Array)
     public function store(Request $request)
     {
-        // Validasi array dari form yang punya tombol "More"
         $request->validate([
-            'name' => 'required',
-            'items' => 'required|array|min:1',     // items sekarang array
-            'items.*' => 'required',
-            'totals' => 'required|array|min:1',    // totals sekarang array
-            'totals.*' => 'required|integer|min:1',
-            'ket' => 'required', // Di PDF Ket itu wajib diisi
+            'name'       => 'required',
+            'items'      => 'required|array|min:1',
+            'items.*'    => 'required',
+            'totals'     => 'required|array|min:1',
+            'totals.*'   => 'required|integer|min:1',
+            'ket'        => 'required',
+            'signature'  => 'required',
+        ], [
+            'signature.required' => 'Tanda tangan wajib diisi sebelum meminjam.',
         ]);
 
-        // Gunakan Database Transaction biar kalau 1 barang gagal validasi, semua proses dibatalkan (aman)
+        // Simpan gambar TTD dari base64
+        $signatureData = $request->signature;
+        $image = str_replace('data:image/png;base64,', '', $signatureData);
+        $image = str_replace(' ', '+', $image);
+        $fileName = 'signatures/' . uniqid() . '.png';
+        \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, base64_decode($image));
+
         DB::beginTransaction();
 
         try {
-            // Looping array barang yang diinput
             foreach ($request->items as $index => $itemId) {
-                // Kunci row item ini sementara biar gak ada bentrok data
                 $item = Item::lockForUpdate()->findOrFail($itemId);
-
                 $qtyToLend = $request->totals[$index];
 
-                // Cek validasi persis seperti teks di PDF
-                if ($qtyToLend > $item->available) {
+                if ($item->available <= 0) {
                     DB::rollBack();
-
                     return back()
-                        ->withErrors(['error' => 'Total item more than available!'])
+                        ->withErrors(['error' => "Stok barang '{$item->name}' sudah habis, tidak bisa dipinjam."])
                         ->withInput();
                 }
 
-                // Catat ke tabel lendings
+                if ($qtyToLend > $item->available) {
+                    DB::rollBack();
+                    return back()
+                        ->withErrors(['error' => "Jumlah peminjaman '{$item->name}' melebihi stok tersedia. Stok tersedia: {$item->available}."])
+                        ->withInput();
+                }
+
                 Lending::create([
-                    'item_id' => $itemId,
-                    'name' => $request->name,
-                    'total' => $qtyToLend,
-                    'ket' => $request->ket,
-                    'date' => Carbon::now()->toDateString(), // Otomatis tanggal hari ini
-                    'return_date' => null,
-                    'edited_by' => Auth::user()->name,
+                    'item_id'    => $itemId,
+                    'name'       => $request->name,
+                    'total'      => $qtyToLend,
+                    'ket'        => $request->ket,
+                    'date'       => Carbon::now()->toDateString(),
+                    'return_date'=> null,
+                    'edited_by'  => Auth::user()->name,
+                    'signature'  => $fileName,
                 ]);
 
-                // Update stok di tabel items
                 $item->update([
-                    'available' => $item->available - $qtyToLend,
+                    'available'     => $item->available - $qtyToLend,
                     'lending_total' => $item->lending_total + $qtyToLend,
                 ]);
             }
 
-            // Kalau semua loop aman, simpan permanen ke database
             DB::commit();
-
-            // Pesan sukses persis sesuai PDF
             return redirect()->route('staff.lendings.index')->with('success', 'Success add new lending item!');
         } catch (\Exception $e) {
             DB::rollBack();
-
-            return back()->withErrors(['error' => 'Terjadi kesalahan: '.$e->getMessage()]);
+            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
     }
 
     // Proses pengembalian barang
-    public function returnItem($id)
+    public function returnItem(Request $request, $id)
     {
         $lending = Lending::findOrFail($id);
 
-        // Kalau barang sudah dikembalikan sebelumnya, batalkan
         if ($lending->return_date != null) {
             return back()->withErrors(['error' => 'Barang ini sudah dikembalikan!']);
         }
 
-        // Update return_date jadi hari ini
-        $lending->update([
-            'return_date' => Carbon::now()->toDateString(),
+        $request->validate([
+            'returned_total'   => 'required|integer|min:1|max:' . ($lending->total - $lending->returned_total),
+            'return_ket'       => 'required',
+            'return_signature' => 'required',
+        ], [
+            'returned_total.max'        => 'Jumlah melebihi sisa pinjaman. Maksimal yang bisa dikembalikan: ' . ($lending->total - $lending->returned_total) . '.',
+            'return_ket.required'       => 'Keterangan pengembalian wajib diisi.',
+            'return_signature.required' => 'Tanda tangan pengembalian wajib diisi.',
         ]);
 
-        // Kembalikan stok ke tabel items
+        // Simpan TTD return
+        $image = str_replace('data:image/png;base64,', '', $request->return_signature);
+        $image = str_replace(' ', '+', $image);
+        $fileName = 'signatures/' . uniqid() . '.png';
+        \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, base64_decode($image));
+
+        $sisaPinjam = $lending->total - $lending->returned_total - $request->returned_total;
+        $newReturnedTotal = $lending->returned_total + $request->returned_total;
+
+        $lending->update([
+            'returned_total'   => $newReturnedTotal,
+            'return_ket'       => $request->return_ket,
+            'return_signature' => $fileName,
+            'return_date'      => $sisaPinjam <= 0 ? Carbon::now()->toDateString() : null,
+        ]);
+
         $item = Item::findOrFail($lending->item_id);
         $item->update([
-            'available' => $item->available + $lending->total,
-            'lending_total' => $item->lending_total - $lending->total,
+            'available'     => $item->available + $request->returned_total,
+            'lending_total' => $item->lending_total - $request->returned_total,
         ]);
 
         return redirect()->route('staff.lendings.index')->with('success', 'Barang berhasil dikembalikan!');
     }
 
     // Export data peminjaman ke Excel
-    public function exportExcel()
+    public function exportExcel(Request $request)
     {
-        $export = new LendingExport;
-
-        return $export->download();
+        return (new LendingExport)->download($request->filter_type, $request->filter_value);
     }
 
     // method

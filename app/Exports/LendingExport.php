@@ -8,23 +8,29 @@ use Carbon\Carbon;
 
 class LendingExport
 {
-    public function download()
+    public function download($filterType = null, $filterValue = null)
     {
-        // Ambil data lending beserta relasi item-nya
-        $lendings = Lending::with('item')->latest()->get()->map(function ($lending) {
+        $query = Lending::with('item')->latest();
 
-            // Format tanggal peminjaman 
-            $date = Carbon::parse($lending->date)->format('M d, Y');
-
-            // Logic Return Date sesuai PDF, kalau null kasih  - 
-            if ($lending->return_date) {
-                $returnDate = Carbon::parse($lending->return_date)->format('M d, Y');
-            } else {
-                $returnDate = ' - ';
+        if ($filterType && $filterValue) {
+            if ($filterType === 'date') {
+                $query->whereDate('date', $filterValue);
+            } elseif ($filterType === 'month') {
+                [$year, $month] = explode('-', $filterValue);
+                $query->whereYear('date', $year)->whereMonth('date', $month);
+            } elseif ($filterType === 'year') {
+                $query->whereYear('date', $filterValue);
             }
+        }
+
+        $lendings = $query->get()->map(function ($lending) {
+            $date = Carbon::parse($lending->date)->format('M d, Y');
+            $returnDate = $lending->return_date
+                ? Carbon::parse($lending->return_date)->format('M d, Y')
+                : ' - ';
 
             return [
-                'Item'        => $lending->item->name ?? '-', // Ambil nama barang dari relasi
+                'Item'        => $lending->item->name ?? '-',
                 'Total'       => $lending->total,
                 'Name'        => $lending->name,
                 'Ket.'        => $lending->ket,
@@ -34,7 +40,6 @@ class LendingExport
             ];
         });
 
-        // Download dengan nama file sesuai PDF
         return (new FastExcel($lendings))->download('lendings.xlsx');
     }
 }

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id(); 
-            $table->string('name');
+            $table->string('name')->unique();
             $table->string('division_pj'); // Menyimpan nama Divisi Penanggung Jawab (contoh: Sarpras, Tefa)
             $table->timestamps(); // Melacak waktu data kategori ditambahkan atau diperbarui
         });

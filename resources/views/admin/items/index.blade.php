@@ -23,7 +23,8 @@
                 <p class="text-muted small mb-0">Add, update items</p>
             </div>
             <div class="d-flex gap-2 flex-shrink-0">
-                <a href="{{ route('admin.items.export') }}" class="btn btn-theme px-3">
+                <a href="{{ route('admin.items.export') }}" class="btn btn-theme px-3"
+                    data-bs-toggle="modal" data-bs-target="#exportFilterModal">
                     <i class="fas fa-file-excel d-md-none"></i>
                     <span class="d-none d-md-inline">Export Excel</span>
                 </a>
@@ -200,4 +201,48 @@
             </div>
         </div>
     </div>
+{{-- Export Filter Modal --}}
+<div class="modal fade" id="exportFilterModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Export Excel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="exportForm" action="{{ route('admin.items.export') }}" method="GET" target="_blank">
+                    <div class="mb-3">
+                        <label class="form-label">Filter By</label>
+                        <select name="filter_type" id="filterType" class="form-select">
+                            <option value="">Semua Data</option>
+                            <option value="date">Tanggal</option>
+                            <option value="month">Bulan</option>
+                            <option value="year">Tahun</option>
+                        </select>
+                    </div>
+                    <div class="mb-4" id="filterValueWrapper" style="display:none">
+                        <label class="form-label">Nilai Filter</label>
+                        <input type="text" name="filter_value" id="filterValue" class="form-control">
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary w-50" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-theme w-50">Download</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('filterType').addEventListener('change', function () {
+        const wrapper = document.getElementById('filterValueWrapper');
+        const input = document.getElementById('filterValue');
+        const type = this.value;
+        if (!type) { wrapper.style.display = 'none'; return; }
+        wrapper.style.display = 'block';
+        input.type = type === 'date' ? 'date' : (type === 'month' ? 'month' : 'number');
+        if (type === 'year') { input.placeholder = 'Contoh: 2024'; input.min = 2000; input.max = 2100; }
+    });
+</script>
 @endsection

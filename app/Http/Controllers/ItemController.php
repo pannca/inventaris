@@ -90,9 +90,9 @@ class ItemController extends Controller
     // }
 
     // Fitur Export Excel
-    public function exportExcel()
+    public function exportExcel(Request $request)
     {
-        return (new ItemExport)->download();
+        return (new ItemExport)->download($request->filter_type, $request->filter_value);
     }
 
     // method khusus staff
